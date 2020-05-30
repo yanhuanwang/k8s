@@ -1,0 +1,27 @@
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: a1-interface
+  labels:
+    app: a1-interface
+spec:
+  selector:
+    matchLabels:
+      app: a1-interface
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: a1-interface
+    spec:
+      containers:
+      - name: master
+        image: nexus3.o-ran-sc.org:10004/o-ran-sc/a1-simulator:1.0.1
+        ports:
+        - name: http
+          containerPort: 8085
+        - name: https
+          containerPort: 8185
+        env:
+        - name: A1_VERSION
+          value: OSC_2.1.0
