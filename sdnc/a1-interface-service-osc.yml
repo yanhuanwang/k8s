@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: a1-interface-osc
+  namespace: nonrtric
+  labels:
+    app: a1-interface-osc
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 8085
+    targetPort: 8085
+  - name: https
+    port: 8185
+    targetPort: 8185
+  selector:
+    app: a1-interface-osc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: a1-interface-std
+  namespace: nonrtric
+  labels:
+    app: a1-interface-std
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 8085
+    targetPort: 8085
+  - name: https
+    port: 8185
+    targetPort: 8185
+  selector:
+    app: a1-interface-std

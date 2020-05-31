@@ -1,0 +1,58 @@
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: a1-interface-osc
+  namespace: nonrtric
+  labels:
+    app: a1-interface-osc
+spec:
+  selector:
+    matchLabels:
+      app: a1-interface-osc
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: a1-interface-osc
+    spec:
+      containers:
+      - name: master
+        image: nexus3.o-ran-sc.org:10004/o-ran-sc/a1-simulator:1.0.1
+        ports:
+        - name: http
+          containerPort: 8085
+        - name: https
+          containerPort: 8185
+        env:
+        - name: A1_VERSION
+          value: OSC_2.1.0
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: a1-interface-std
+  namespace: nonrtric
+  labels:
+    app: a1-interface-std
+spec:
+  selector:
+    matchLabels:
+      app: a1-interface-std
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: a1-interface-std
+    spec:
+      containers:
+      - name: master
+        image: nexus3.o-ran-sc.org:10004/o-ran-sc/a1-simulator:1.0.1
+        ports:
+        - name: http
+          containerPort: 8085
+        - name: https
+          containerPort: 8185
+        env:
+        - name: A1_VERSION
+          value: STD_1.1.3
