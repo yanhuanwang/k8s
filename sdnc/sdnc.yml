@@ -1,0 +1,378 @@
+################################################################################
+#   Copyright (c) 2020 Nordix Foundation.                                      #
+#                                                                              #
+#   Licensed under the Apache License, Version 2.0 (the "License");            #
+#   you may not use this file except in compliance with the License.           #
+#   You may obtain a copy of the License at                                    #
+#                                                                              #
+#       http://www.apache.org/licenses/LICENSE-2.0                             #
+#                                                                              #
+#   Unless required by applicable law or agreed to in writing, software        #
+#   distributed under the License is distributed on an "AS IS" BASIS,          #
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   #
+#   See the License for the specific language governing permissions and        #
+#   limitations under the License.                                             #
+################################################################################
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: nonrtric
+  labels:
+    name: nonrtric
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: a1-controller
+  namespace: nonrtric
+  labels:
+    app: a1-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: a1-controller
+  template:
+    metadata:
+      labels:
+        app: a1-controller
+    spec:
+      hostname: a1-controller
+      containers:
+        - name: a1-controller
+          image: nexus3.o-ran-sc.org:10004/o-ran-sc/nonrtric-a1-controller:1.7.5
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: openECOMP1.0
+            - name: SDNC_CONFIG_DIR
+              value: /opt/onap/sdnc/data/properties
+          command:
+            - /opt/onap/sdnc/bin/startODL.sh
+          ports:
+            - name: http
+              containerPort: 8181
+              protocol: TCP
+            - name: https
+              containerPort: 8443
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: 8181
+            initialDelaySeconds: 15
+            periodSeconds: 15
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+  namespace: nonrtric
+  labels:
+    app: db
+spec:
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+        - name: sdnc-db-container
+          image: mysql/mysql-server:5.6
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MYSQL_ROOT_HOST
+              value: '%'
+            - name: MYSQL_ROOT_PASSWORD
+              value: openECOMP1.0
+          ports:
+            - containerPort: 3306
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: a1-controller
+  namespace: nonrtric
+  labels:
+    app: a1-controller
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8181
+      protocol: TCP
+      targetPort: 8282
+    - name: https
+      port: 8443
+      protocol: TCP
+      targetPort: 8443
+  selector:
+    app: a1-controller
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dbhost
+  namespace: nonrtric
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    app: db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sdnctldb01
+  namespace: nonrtric
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    app: db
+
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: a1-interface-osc
+  namespace: nonrtric
+  labels:
+    app: a1-interface-osc
+spec:
+  selector:
+    matchLabels:
+      app: a1-interface-osc
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: a1-interface-osc
+    spec:
+      containers:
+      - name: master
+        image: nexus3.o-ran-sc.org:10004/o-ran-sc/a1-simulator:1.0.1
+        ports:
+        - name: http
+          containerPort: 8085
+        - name: https
+          containerPort: 8185
+        env:
+        - name: A1_VERSION
+          value: OSC_2.1.0
+        - name: ALLOW_HTTP
+          value: "true"
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: a1-interface-std
+  namespace: nonrtric
+  labels:
+    app: a1-interface-std
+spec:
+  selector:
+    matchLabels:
+      app: a1-interface-std
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: a1-interface-std
+    spec:
+      containers:
+      - name: master
+        image: nexus3.o-ran-sc.org:10004/o-ran-sc/a1-simulator:1.0.1
+        ports:
+        - name: http
+          containerPort: 8085
+        - name: https
+          containerPort: 8185
+        env:
+        - name: A1_VERSION
+          value: STD_1.1.3
+        - name: ALLOW_HTTP
+          value: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: a1-interface-osc
+  namespace: nonrtric
+  labels:
+    app: a1-interface-osc
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 8085
+    targetPort: 8085
+  - name: https
+    port: 8185
+    targetPort: 8185
+  selector:
+    app: a1-interface-osc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: a1-interface-std
+  namespace: nonrtric
+  labels:
+    app: a1-interface-std
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 8085
+    targetPort: 8085
+  - name: https
+    port: 8185
+    targetPort: 8185
+  selector:
+    app: a1-interface-std
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: policy-agent-container
+  namespace: nonrtric
+  labels:
+    app: policy-agent-container
+spec:
+  selector:
+    matchLabels:
+      app: policy-agent-container
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: policy-agent-container
+    spec:
+      containers:
+      - name: master
+        image: nexus3.o-ran-sc.org:10004/o-ran-sc/nonrtric-policy-agent:1.0.0
+        ports:
+        - name: http
+          containerPort: 8081
+        - name: https
+          containerPort: 8433
+        volumeMounts:
+        - name: "config"
+          mountPath: "/opt/app/policy-agent/config/application_configuration.json"
+          subPath: "application_configuration.json"
+      volumes:
+        - name: "config"
+          configMap:
+            name: "config"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: 2016-02-18T19:14:38Z
+  name: config
+  namespace: nonrtric
+data:
+  # example of a complex property defined using --from-file
+  application_configuration.json: |-
+    {
+      "config": {
+          "//description": "Application configuration",
+          "controller": [
+            {
+                "name": "a1-controller",
+                "baseUrl": "http://a1-controller:8181",
+                "userName": "admin",
+                "password": "Kp8bJ4SXszM0WXlhak3eHlcse2gAw84vaoGGmJvUy2U"
+            }
+          ],
+          "ric": [
+            {
+                "name": "ric1",
+                "baseUrl": "http://a1-interface-osc:8085/",
+                "managedElementIds": [
+                  "kista_1",
+                  "kista_2"
+                ]
+            },
+            {
+                "name": "ric2",
+                "baseUrl": "http://a1-interface-std:8085/",
+                "managedElementIds": [
+                  "kista_1",
+                  "kista_2"
+                ]
+            }
+          ]
+      }
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: policy-agent-container
+  namespace: nonrtric
+  labels:
+    app: policy-agent-container
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 8081
+    targetPort: 8081
+  - name: https
+    port: 8433
+    targetPort: 8433
+  selector:
+    app: policy-agent-container
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: controlpanel
+  namespace: nonrtric
+  labels:
+    app: controlpanel
+spec:
+  selector:
+    matchLabels:
+      app: controlpanel
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: controlpanel
+    spec:
+      containers:
+      - name: master
+        image: nexus3.o-ran-sc.org:10004/o-ran-sc/nonrtric-controlpanel:1.0.0
+        ports:
+        - name: http
+          containerPort: 8080
+        - name: https
+          containerPort: 8082
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: controlpanel
+  namespace: nonrtric
+  labels:
+    app: controlpanel
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+  - name: https
+    port: 8082
+    targetPort: 8082
+  selector:
+    app: controlpanel
