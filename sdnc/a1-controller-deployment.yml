@@ -51,7 +51,11 @@ spec:
           command:
             - /opt/onap/sdnc/bin/startODL.sh
           ports:
-            - containerPort: 8181
+            - name: http
+              containerPort: 8181
+              protocol: TCP
+            - name: https
+              containerPort: 8443
               protocol: TCP
           readinessProbe:
             tcpSocket:

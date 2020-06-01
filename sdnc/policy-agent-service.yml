@@ -8,8 +8,12 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 8081
+  - name: http
+    port: 8081
     targetPort: 8081
+  - name: https
+    port: 8433
+    targetPort: 8433
   selector:
     app: policy-agent-container
 

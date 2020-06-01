@@ -24,9 +24,14 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - port: 8181
+    - name: http
+      port: 8181
       protocol: TCP
       targetPort: 8282
+    - name: https
+      port: 8443
+      protocol: TCP
+      targetPort: 8443
   selector:
     app: a1-controller
 ---
