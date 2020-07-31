@@ -154,6 +154,14 @@ data:
     {
       "config": {
           "//description": "Application configuration",
+          "controller": [
+            {
+                "name": "a1-controller",
+                "baseUrl": "http://a1-controller:8181",
+                "userName": "admin",
+                "password": "Kp8bJ4SXszM0WXlhak3eHlcse2gAw84vaoGGmJvUy2U"
+            }
+          ],
           "ric": [
             {
                 "name": "ric1",
@@ -256,3 +264,118 @@ spec:
     targetPort: 8082
   selector:
     app: controlpanel
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: a1-controller
+  namespace: nonrtric
+  labels:
+    app: a1-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: a1-controller
+  template:
+    metadata:
+      labels:
+        app: a1-controller
+    spec:
+      hostname: a1-controller
+      containers:
+        - name: a1-controller
+          image: nexus3.o-ran-sc.org:10004/o-ran-sc/nonrtric-a1-controller:2.0.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: openECOMP1.0
+            - name: SDNC_CONFIG_DIR
+              value: /opt/onap/sdnc/data/properties
+          command:
+            - /opt/onap/sdnc/bin/startODL.sh
+          ports:
+            - name: http
+              containerPort: 8181
+              protocol: TCP
+            - name: https
+              containerPort: 8443
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: 8181
+            initialDelaySeconds: 15
+            periodSeconds: 15
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+  namespace: nonrtric
+  labels:
+    app: db
+spec:
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+        - name: sdnc-db-container
+          image: mysql/mysql-server:5.6
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MYSQL_ROOT_HOST
+              value: '%'
+            - name: MYSQL_ROOT_PASSWORD
+              value: openECOMP1.0
+          ports:
+            - containerPort: 3306
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: a1-controller
+  namespace: nonrtric
+  labels:
+    app: a1-controller
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8181
+      protocol: TCP
+      targetPort: 8282
+    - name: https
+      port: 8443
+      protocol: TCP
+      targetPort: 8443
+  selector:
+    app: a1-controller
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dbhost
+  namespace: nonrtric
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    app: db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sdnctldb01
+  namespace: nonrtric
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    app: db
