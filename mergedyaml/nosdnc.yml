@@ -155,7 +155,7 @@ data:
           "ric": [
             {
                 "name": "ric1",
-                "baseUrl": "http://a1-interface-osc:8085/",
+                "baseUrl": "https://a1-interface-osc:8185/",
                 "managedElementIds": [
                   "kista_1",
                   "kista_2"
@@ -163,7 +163,7 @@ data:
             },
             {
                 "name": "ric2",
-                "baseUrl": "http://a1-interface-std:8085/",
+                "baseUrl": "https://a1-interface-std:8185/",
                 "managedElementIds": [
                   "kista_1",
                   "kista_2"

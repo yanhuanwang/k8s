@@ -127,7 +127,7 @@ spec:
     spec:
       containers:
       - name: master
-        image: nexus3.o-ran-sc.org:10004/o-ran-sc/nonrtric-policy-agent:2.0.0
+        image: nexus3.o-ran-sc.org:10004/o-ran-sc/nonrtric-policy-agent:2.0.1
         ports:
         - name: http
           containerPort: 8081
