@@ -133,8 +133,8 @@ spec:
           containerPort: 8433
         volumeMounts:
         - name: "config"
-          mountPath: "/opt/app/policy-agent/data/application_configuration.json"
-          subPath: "application_configuration.json"
+          mountPath: "/opt/app/policy-agent/data/"
+          # subPath: "application_configuration.json"
       volumes:
         - name: "config"
           configMap:
