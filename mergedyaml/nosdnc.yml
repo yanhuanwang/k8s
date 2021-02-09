@@ -68,6 +68,37 @@ spec:
         - name: ALLOW_HTTP
           value: "true"
 ---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: a1-interface-std-v2
+  namespace: nonrtric
+  labels:
+    app: a1-interface-std-v2
+spec:
+  selector:
+    matchLabels:
+      app: a1-interface-std-v2
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: a1-interface-std-v2
+    spec:
+      containers:
+      - name: master
+        image: nexus3.o-ran-sc.org:10004/o-ran-sc/a1-simulator:2.1.0
+        ports:
+        - name: http
+          containerPort: 8085
+        - name: https
+          containerPort: 8185
+        env:
+        - name: A1_VERSION
+          value: STD_2.0.0
+        - name: ALLOW_HTTP
+          value: "true"
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -105,6 +136,25 @@ spec:
     targetPort: 8185
   selector:
     app: a1-interface-std
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: a1-interface-std-v2
+  namespace: nonrtric
+  labels:
+    app: a1-interface-std-v2
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 8085
+    targetPort: 8085
+  - name: https
+    port: 8185
+    targetPort: 8185
+  selector:
+    app: a1-interface-std-v2
 ---
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
@@ -164,6 +214,14 @@ data:
             {
                 "name": "ric2",
                 "baseUrl": "https://a1-interface-std:8185/",
+                "managedElementIds": [
+                  "kista_1",
+                  "kista_2"
+                ]
+            },
+            {
+                "name": "ric3",
+                "baseUrl": "https://a1-interface-std-v2:8185/",
                 "managedElementIds": [
                   "kista_1",
                   "kista_2"
