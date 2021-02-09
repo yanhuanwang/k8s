@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
       - name: master
-        image: nexus3.o-ran-sc.org:10004/o-ran-sc/a1-simulator:2.0.0
+        image: nexus3.o-ran-sc.org:10004/o-ran-sc/a1-simulator:2.1.0
         ports:
         - name: http
           containerPort: 8085
@@ -58,7 +58,7 @@ spec:
     spec:
       containers:
       - name: master
-        image: nexus3.o-ran-sc.org:10004/o-ran-sc/a1-simulator:2.0.0
+        image: nexus3.o-ran-sc.org:10004/o-ran-sc/a1-simulator:2.1.0
         ports:
         - name: http
           containerPort: 8085
@@ -127,7 +127,7 @@ spec:
     spec:
       containers:
       - name: master
-        image: nexus3.o-ran-sc.org:10004/o-ran-sc/nonrtric-policy-agent:2.0.1
+        image: nexus3.onap.org:10003/onap/ccsdk-oran-a1policymanagementservice:1.1.1-STAGING-latest
         ports:
         - name: http
           containerPort: 8081
@@ -239,7 +239,7 @@ spec:
     spec:
       containers:
       - name: master
-        image: nexus3.o-ran-sc.org:10004/o-ran-sc/nonrtric-controlpanel:2.0.0
+        image: nexus3.o-ran-sc.org:10004/o-ran-sc/nonrtric-controlpanel:2.1.1
         ports:
         - name: http
           containerPort: 8080
@@ -285,7 +285,7 @@ spec:
       hostname: a1-controller
       containers:
         - name: a1-controller
-          image: nexus3.o-ran-sc.org:10004/o-ran-sc/nonrtric-a1-controller:2.0.0
+          image: nexus3.o-ran-sc.org:10004/o-ran-sc/nonrtric-a1-controller:2.0.1
           imagePullPolicy: IfNotPresent
           env:
             - name: MYSQL_ROOT_PASSWORD
