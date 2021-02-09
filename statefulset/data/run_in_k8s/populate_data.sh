@@ -34,34 +34,50 @@ a1_sim_std_0_host="a1-interface-std-0.a1-sim"
 a1_sim_std_0_port="8085"
 a1_sim_std_1_host="a1-interface-std-1.a1-sim"
 a1_sim_std_1_port="8085"
+a1_sim_std_v2_0_host="a1-interface-std-v2-0.a1-sim"
+a1_sim_std_v2_0_port="8085"
+a1_sim_std_v2_1_host="a1-interface-std-v2-1.a1-sim"
+a1_sim_std_v2_1_port="8085"
 httpx=http
 
 echo "policy agent status:"
-curl -skw " %{http_code}" $httpx://$policy_agent_host:$policy_agent_port/status
+curl -skw %{http_code} $httpx://$policy_agent_host:$policy_agent_port/status
 echo -e "\n"
 
 echo "ric1 version:"
-curl -skw " %{http_code}" $httpx://$a1_sim_osc_0_host:$a1_sim_osc_0_port/counter/interface
+curl -skw %{http_code} $httpx://$a1_sim_osc_0_host:$a1_sim_osc_0_port/counter/interface
 echo -e "\n"
 
 echo "ric2 version:"
-curl -skw " %{http_code}" $httpx://$a1_sim_osc_1_host:$a1_sim_osc_1_port/counter/interface
+curl -skw %{http_code} $httpx://$a1_sim_osc_1_host:$a1_sim_osc_1_port/counter/interface
 echo -e "\n"
 
 echo "ric3 version:"
-curl -skw " %{http_code}" $httpx://$a1_sim_std_0_host:$a1_sim_std_0_port/counter/interface
+curl -skw %{http_code} $httpx://$a1_sim_std_0_host:$a1_sim_std_0_port/counter/interface
 echo -e "\n"
 
 echo "ric4 version:"
-curl -skw " %{http_code}" $httpx://$a1_sim_std_1_host:$a1_sim_std_1_port/counter/interface
+curl -skw %{http_code} $httpx://$a1_sim_std_1_host:$a1_sim_std_1_port/counter/interface
+echo -e "\n"
+
+echo "ric5 version:"
+curl -skw %{http_code} $httpx://$a1_sim_std_v2_0_host:$a1_sim_std_v2_0_port/counter/interface
+echo -e "\n"
+
+echo "ric6 version:"
+curl -skw %{http_code} $httpx://$a1_sim_std_v2_1_host:$a1_sim_std_v2_1_port/counter/interface
 echo -e "\n"
 
 echo "create policy type 1 to ric1:"
-curl -X PUT -skw " %{http_code}" $httpx://$a1_sim_osc_0_host:$a1_sim_osc_0_port/policytype?id=1 -H Content-Type:application/json --data-binary @testdata/OSC/policy_type.json
+curl -X PUT -skw %{http_code} $httpx://$a1_sim_osc_0_host:$a1_sim_osc_0_port/policytype?id=1 -H Content-Type:application/json --data-binary @testdata/OSC/policy_type.json
 echo -e "\n"
 
 echo "create policy type 1 to ric2:"
-curl -X PUT -skw " %{http_code}" $httpx://$a1_sim_osc_1_host:$a1_sim_osc_1_port/policytype?id=1 -H Content-Type:application/json --data-binary @testdata/OSC/policy_type.json
+curl -X PUT -skw %{http_code} $httpx://$a1_sim_osc_1_host:$a1_sim_osc_1_port/policytype?id=1 -H Content-Type:application/json --data-binary @testdata/OSC/policy_type.json
+echo -e "\n"
+
+echo "create policy type 2 to ric5:"
+curl -skw %{http_code} $httpx://$a1_sim_std_v2_0_host:$a1_sim_std_v2_0_port/policytype?id=2 -X PUT -H Accept:application/json -H Content-Type:application/json -H X-Requested-With:XMLHttpRequest --data-binary @testdata/v2/policy_type.json
 echo -e "\n"
 
 for i in {1..12}; do
@@ -69,7 +85,7 @@ for i in {1..12}; do
     curlString="curl -skw %{http_code} $httpx://$policy_agent_host:$policy_agent_port/policy_types"
     res=$($curlString)
     echo "$res"
-    expect="[\"\",\"1\"]200"
+    expect="[\"\",\"1\",\"2\"]200"
     if [ "$res" == "$expect" ]; then
         echo -e "\n"
         break;
@@ -79,45 +95,37 @@ for i in {1..12}; do
 done
 
 echo "create service 1 to policy agent:"
-curl -k -X PUT -sw " %{http_code}" -H accept:application/json -H Content-Type:application/json "$httpx://$policy_agent_host:$policy_agent_port/service" --data-binary @testdata/service.json
+curl -k -X PUT -sw %{http_code} -H accept:application/json -H Content-Type:application/json "$httpx://$policy_agent_host:$policy_agent_port/service" --data-binary @testdata/service.json
+echo -e "\n"
+
+echo "create service ric-registration to policy agent:"
+curl -k -X PUT -sw %{http_code} -H accept:application/json -H Content-Type:application/json "$httpx://$policy_agent_host:$policy_agent_port/a1-policy/v2/services" --data-binary @testdata/v2/service.json
 echo -e "\n"
 
 echo "create policy 2000 to ric1 with type1 and service1 via policy agent:"
-curl -k -X PUT -sw " %{http_code}" -H accept:application/json -H Content-Type:application/json "$httpx://$policy_agent_host:$policy_agent_port/policy?id=2000&ric=ric1&service=service1&type=1" --data-binary @testdata/policy.json
-echo -e "\n"
-
-echo "create policy 2001 to ric1 with type1 and service1 via policy agent:"
-curl -k -X PUT -sw " %{http_code}" -H accept:application/json -H Content-Type:application/json "$httpx://$policy_agent_host:$policy_agent_port/policy?id=2001&ric=ric1&service=service1&type=1" --data '{"scope": {"ueId": "ue3100","qosId": "qos3100"},"qosObjective": {"priorityLevel": 3101}}'
-echo -e "\n"
-
-echo "create policy 2002 to ric1 with type1 and service1 via policy agent:"
-curl -k -X PUT -sw " %{http_code}" -H accept:application/json -H Content-Type:application/json "$httpx://$policy_agent_host:$policy_agent_port/policy?id=2002&ric=ric1&service=service1&type=1" --data '{"scope": {"ueId": "ue3100","qosId": "qos3100"},"qosObjective": {"priorityLevel": 3102}}'
-echo -e "\n"
-
-echo "create policy 2003 to ric1 with type1 and service1 via policy agent:"
-curl -k -X PUT -sw " %{http_code}" -H accept:application/json -H Content-Type:application/json "$httpx://$policy_agent_host:$policy_agent_port/policy?id=2003&ric=ric1&service=service1&type=1" --data '{"scope": {"ueId": "ue3100","qosId": "qos3100"},"qosObjective": {"priorityLevel": 3103}}'
-echo -e "\n"
-
-echo "create policy 2004 to ric1 with type1 and service1 via policy agent:"
-curl -k -X PUT -sw " %{http_code}" -H accept:application/json -H Content-Type:application/json "$httpx://$policy_agent_host:$policy_agent_port/policy?id=2004&ric=ric1&service=service1&type=1" --data '{"scope": {"ueId": "ue3100","qosId": "qos3100"},"qosObjective": {"priorityLevel": 3104}}'
+curl -k -X PUT -sw %{http_code} -H accept:application/json -H Content-Type:application/json "$httpx://$policy_agent_host:$policy_agent_port/policy?id=2000&ric=ric1&service=service1&type=1" --data-binary @testdata/policy.json
 echo -e "\n"
 
 echo "policy numbers from ric1:"
-curl -skw " %{http_code}" $httpx://$a1_sim_osc_0_host:$a1_sim_osc_0_port/counter/num_instances
+curl -skw %{http_code} $httpx://$a1_sim_osc_0_host:$a1_sim_osc_0_port/counter/num_instances
 echo -e "\n"
 
 echo "create policy 2100 to ric3 with service1 via policy agent, no type:"
-curl -k -X PUT -sw " %{http_code}" -H accept:application/json -H Content-Type:application/json "$httpx://$policy_agent_host:$policy_agent_port/policy?id=2100&ric=ric3&service=service1" --data-binary @testdata/policy.json
+curl -k -X PUT -sw %{http_code} -H accept:application/json -H Content-Type:application/json "$httpx://$policy_agent_host:$policy_agent_port/policy?id=2100&ric=ric3&service=service1" --data-binary @testdata/policy.json
+echo -e "\n"
+
+echo "create policy aa8feaa88d944d919ef0e83f2172a5100 to ric5 with type 2 and service controlpanel via policy agent:"
+curl -k -X PUT -sw %{http_code} -H accept:application/json -H Content-Type:application/json "$httpx://$policy_agent_host:$policy_agent_port/a1-policy/v2/policies" --data-binary @testdata/v2/policy_std_v2.json
 echo -e "\n"
 
 echo "policy numbers from ric3:"
-curl -skw " %{http_code}" $httpx://$a1_sim_std_0_host:$a1_sim_std_0_port/counter/num_instances
+curl -skw %{http_code} $httpx://$a1_sim_std_0_host:$a1_sim_std_0_port/counter/num_instances
 echo -e "\n"
 
 echo "policy id 2000 from policy agent:"
-curl -k -X GET -sw " %{http_code}" $httpx://$policy_agent_host:$policy_agent_port/policy?id=2000
+curl -k -X GET -sw %{http_code} $httpx://$policy_agent_host:$policy_agent_port/policy?id=2000
 echo -e "\n"
 
 echo "policy id 2100 from policy agent:"
-curl -k -X GET -sw " %{http_code}" $httpx://$policy_agent_host:$policy_agent_port/policy?id=2100
+curl -k -X GET -sw %{http_code} $httpx://$policy_agent_host:$policy_agent_port/policy?id=2100
 echo -e "\n"
