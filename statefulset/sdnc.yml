@@ -70,6 +70,38 @@ spec:
         - name: ALLOW_HTTP
           value: "true"
 ---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: StatefulSet
+metadata:
+  name: a1-interface-std-v2
+  namespace: nonrtric
+  labels:
+    app: a1-sim
+spec:
+  selector:
+    matchLabels:
+      app: a1-sim
+  replicas: 2
+  serviceName: a1-sim
+  template:
+    metadata:
+      labels:
+        app: a1-sim
+    spec:
+      containers:
+      - name: master
+        image: nexus3.o-ran-sc.org:10004/o-ran-sc/a1-simulator:2.1.0
+        ports:
+        - name: http
+          containerPort: 8085
+        - name: https
+          containerPort: 8185
+        env:
+        - name: A1_VERSION
+          value: STD_2.0.0
+        - name: ALLOW_HTTP
+          value: "true"
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -153,7 +185,6 @@ data:
   application_configuration.json: |-
     {
       "config": {
-          "//description": "Application configuration",
           "controller": [
             {
                 "name": "a1-controller",
@@ -166,6 +197,7 @@ data:
             {
                 "name": "ric1",
                 "baseUrl": "https://a1-interface-osc-0.a1-sim:8185/",
+                "controller": "a1-controller",
                 "managedElementIds": [
                   "kista_1",
                   "kista_2"
@@ -174,6 +206,7 @@ data:
             {
                 "name": "ric2",
                 "baseUrl": "https://a1-interface-osc-1.a1-sim:8185/",
+                "controller": "a1-controller",
                 "managedElementIds": [
                   "kista_1",
                   "kista_2"
@@ -182,6 +215,7 @@ data:
             {
                 "name": "ric3",
                 "baseUrl": "https://a1-interface-std-0.a1-sim:8185/",
+                "controller": "a1-controller",
                 "managedElementIds": [
                   "kista_1",
                   "kista_2"
@@ -190,6 +224,25 @@ data:
             {
                 "name": "ric4",
                 "baseUrl": "https://a1-interface-std-1.a1-sim:8185/",
+                "controller": "a1-controller",
+                "managedElementIds": [
+                  "kista_1",
+                  "kista_2"
+                ]
+            },
+            {
+                "name": "ric5",
+                "baseUrl": "https://a1-interface-std-v2-0.a1-sim:8185/",
+                "controller": "a1-controller",
+                "managedElementIds": [
+                  "kista_1",
+                  "kista_2"
+                ]
+            },
+            {
+                "name": "ric6",
+                "baseUrl": "https://a1-interface-std-v2-1.a1-sim:8185/",
+                "controller": "a1-controller",
                 "managedElementIds": [
                   "kista_1",
                   "kista_2"
@@ -285,7 +338,7 @@ spec:
       hostname: a1-controller
       containers:
         - name: a1-controller
-          image: nexus3.o-ran-sc.org:10004/o-ran-sc/nonrtric-a1-controller:2.0.1
+          image: nexus3.o-ran-sc.org:10002/o-ran-sc/nonrtric-a1-controller:2.0.1
           imagePullPolicy: IfNotPresent
           env:
             - name: MYSQL_ROOT_PASSWORD
@@ -302,6 +355,11 @@ spec:
               containerPort: 8443
               protocol: TCP
           readinessProbe:
+            tcpSocket:
+              port: 8181
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          livenessProbe:
             tcpSocket:
               port: 8181
             initialDelaySeconds: 15
@@ -343,12 +401,12 @@ metadata:
   labels:
     app: a1-controller
 spec:
-  type: ClusterIP
+  type: NodePort
   ports:
     - name: http
-      port: 8181
+      port: 8282
       protocol: TCP
-      targetPort: 8282
+      targetPort: 8181
     - name: https
       port: 8443
       protocol: TCP

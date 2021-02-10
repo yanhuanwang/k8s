@@ -103,9 +103,9 @@ spec:
   type: ClusterIP
   ports:
     - name: http
-      port: 8181
+      port: 8282
       protocol: TCP
-      targetPort: 8282
+      targetPort: 8181
     - name: https
       port: 8443
       protocol: TCP
@@ -333,7 +333,6 @@ data:
   application_configuration.json: |-
     {
       "config": {
-          "//description": "Application configuration",
           "controller": [
             {
                 "name": "a1-controller",
@@ -346,6 +345,7 @@ data:
             {
                 "name": "ric1",
                 "baseUrl": "https://a1-interface-osc:8185/",
+                "controller": "a1-controller",
                 "managedElementIds": [
                   "kista_1",
                   "kista_2"
@@ -354,6 +354,7 @@ data:
             {
                 "name": "ric2",
                 "baseUrl": "https://a1-interface-std:8185/",
+                "controller": "a1-controller",
                 "managedElementIds": [
                   "kista_1",
                   "kista_2"
@@ -362,6 +363,7 @@ data:
             {
                 "name": "ric3",
                 "baseUrl": "https://a1-interface-std-v2:8185/",
+                "controller": "a1-controller",
                 "managedElementIds": [
                   "kista_1",
                   "kista_2"

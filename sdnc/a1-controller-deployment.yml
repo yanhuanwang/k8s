@@ -41,7 +41,7 @@ spec:
       hostname: a1-controller
       containers:
         - name: a1-controller
-          image: nexus3.o-ran-sc.org:10004/o-ran-sc/nonrtric-a1-controller:1.7.5
+          image: nexus3.o-ran-sc.org:10002/o-ran-sc/nonrtric-a1-controller:2.0.1
           imagePullPolicy: IfNotPresent
           env:
             - name: MYSQL_ROOT_PASSWORD

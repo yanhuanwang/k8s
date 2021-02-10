@@ -14,27 +14,6 @@
 #   limitations under the License.                                             #
 ################################################################################
 
-kind: Service
-apiVersion: v1
-metadata:
-  name: a1-controller
-  namespace: nonrtric
-  labels:
-    app: a1-controller
-spec:
-  type: ClusterIP
-  ports:
-    - name: http
-      port: 8181
-      protocol: TCP
-      targetPort: 8282
-    - name: https
-      port: 8443
-      protocol: TCP
-      targetPort: 8443
-  selector:
-    app: a1-controller
----
 apiVersion: v1
 kind: Service
 metadata:
@@ -58,3 +37,36 @@ spec:
       targetPort: 3306
   selector:
     app: db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sdnctldb02
+  namespace: nonrtric
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    app: db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: a1-controller
+  namespace: nonrtric
+  labels:
+    app: a1-controller
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 8282
+      protocol: TCP
+      targetPort: 8181
+    - name: https
+      port: 8443
+      protocol: TCP
+      targetPort: 8443
+  selector:
+    app: a1-controller
