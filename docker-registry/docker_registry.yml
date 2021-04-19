@@ -16,25 +16,25 @@ spec:
         app: registry
     spec:
       containers:
+      - name: nginx
+        image: nginx:1.19
+        ports:
+        - name: tcp
+          containerPort: 5001
+        volumeMounts:
+          - name: config
+            readOnly: true
+            mountPath: /etc/nginx/nginx.conf
+            subPath: nginx.conf
       - name: master
         image: registry:2
-        env:
-        - name: REGISTRY_HTTP_ADDR
-          value: 0.0.0.0:443
-        - name: REGISTRY_HTTP_TLS_CERTIFICATE
-          value: /certs/domain.pem
-        - name: REGISTRY_HTTP_TLS_KEY
-          value: /certs/domain.key
         ports:
         - name: tcp
           containerPort: 5000
-        volumeMounts:
-        - name: cert
-          mountPath: /certs/
       volumes:
-      - name: cert
+      - name: config
         configMap:
-          name: config
+          name: nginx.conf
 ---
 apiVersion: v1
 kind: Service
@@ -47,72 +47,57 @@ spec:
   type: LoadBalancer
   ports:
   - name: tcp
-    port: 5000
-    targetPort: 5000
+    port: 5001
+    targetPort: 5001
   selector:
     app: registry
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  creationTimestamp: 2016-02-18T19:14:38Z
-  name: config
+  name: nginx.conf
   namespace: nonrtric
 data:
   # example of a complex property defined using --from-file
-  domain.pem: |-
-    -----BEGIN CERTIFICATE-----
-    MIIEbDCCAtSgAwIBAgIRANNDs9qXPBTlUUUvPuseATEwDQYJKoZIhvcNAQELBQAw
-    gaExHjAcBgNVBAoTFW1rY2VydCBkZXZlbG9wbWVudCBDQTE7MDkGA1UECwwyY2hl
-    bmdrYWl5YW5AcHJvbW90ZS5jYWNoZS1kbnMubG9jYWwgKENoZW5na2FpIFlhbikx
-    QjBABgNVBAMMOW1rY2VydCBjaGVuZ2thaXlhbkBwcm9tb3RlLmNhY2hlLWRucy5s
-    b2NhbCAoQ2hlbmdrYWkgWWFuKTAeFw0yMTA0MTYxODU3NDFaFw0yMzA3MTYxODU3
-    NDFaMGYxJzAlBgNVBAoTHm1rY2VydCBkZXZlbG9wbWVudCBjZXJ0aWZpY2F0ZTE7
-    MDkGA1UECwwyY2hlbmdrYWl5YW5AcHJvbW90ZS5jYWNoZS1kbnMubG9jYWwgKENo
-    ZW5na2FpIFlhbikwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDMSoLV
-    xSF0eICAgJc4hamRU/doZWXD579Jb35+U3a2a9I3gBoY5uBSY1BCPsGEMKbNO2v2
-    HVtiZpoLbsHAXXXBHSnnVgw7utyCl+kXxTNPG/9lbsxkH7CKH6L3uF8gF1iqpVrN
-    BerSCYJEFB/DGOx+iKctBZmgbGOPcuNAjIswIPzJX9x4JoZDT4NIBnrbG6xNYphc
-    Kp9i2TujPlDqix5i9ieXTYUSZJocP8PIYRmPa4GVv9w1QZM7MRcN/NraJehu6eU0
-    l9dMmY0YrV3vXKEoJ3VwRJvgMbZHh5u0Bo4MMNDoyQ1pIHVx/+MWr+fx8aMuoSht
-    hg65Ev9ljzov43XVAgMBAAGjWTBXMA4GA1UdDwEB/wQEAwIFoDATBgNVHSUEDDAK
-    BggrBgEFBQcDATAfBgNVHSMEGDAWgBQPCS9dsdCst7RrqefLovq0y6qnSjAPBgNV
-    HREECDAGhwQj7zSPMA0GCSqGSIb3DQEBCwUAA4IBgQB9lf/7MpCFIS0hi3Oh6Hr6
-    aM7/pHglCxUm2o9cxuY+cCYhnFQ78YvRpiuLzBOzn6hFgoLJA0ZW46O1d2UivM6y
-    BimJbxVtDEAEXvk+eA95f9UtarRUARwSjSy3d4xmGFG9ovhuFlat5JSjs6T3mhNd
-    Fc3f7kVyynqo0jD3CFdFUfvRzPC3yjpa7i3FE4YRWcaXnjdlqDVTwFVqIHtvbFHY
-    lgrJ8cCPC6h3028wvsK3n3vvYLlX5M550egS0E1WoeIbuXeCuZmOQxl7jqZSMIkU
-    D4YyR60lUgMYxzwWuHCdAVhZSMiNysFTnvMDvx7W8mcypEerwyujcebo+3SO+fFU
-    oI8CwVoIVDfJ6tGg/UYtdW8N6h/Fjn/JYCrXT7Q6xfQ+Q8sQA5A58jOTV5yCj+pV
-    GpPkg5r9nNDuK0cDPZhd0eIK6aG1LEGS7ypuZ77mX2vlb9MGquFeuCMvMSUUS9gq
-    DagFi9bNjb4HV6zTQloxaeB6iKMQwv5WM5YWbwJ6Z3U=
-    -----END CERTIFICATE-----
-  domain.key: |-
-    -----BEGIN PRIVATE KEY-----
-    MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDMSoLVxSF0eICA
-    gJc4hamRU/doZWXD579Jb35+U3a2a9I3gBoY5uBSY1BCPsGEMKbNO2v2HVtiZpoL
-    bsHAXXXBHSnnVgw7utyCl+kXxTNPG/9lbsxkH7CKH6L3uF8gF1iqpVrNBerSCYJE
-    FB/DGOx+iKctBZmgbGOPcuNAjIswIPzJX9x4JoZDT4NIBnrbG6xNYphcKp9i2Tuj
-    PlDqix5i9ieXTYUSZJocP8PIYRmPa4GVv9w1QZM7MRcN/NraJehu6eU0l9dMmY0Y
-    rV3vXKEoJ3VwRJvgMbZHh5u0Bo4MMNDoyQ1pIHVx/+MWr+fx8aMuoShthg65Ev9l
-    jzov43XVAgMBAAECggEBAKSjJ+2/gMaslmL5PuV+UrmcQbcQgILxMWetQvPrr7A0
-    FKZFxsJqzj2XbAb3LF2sF8EuMkOWRR94MI0mJV8x8sQ/DJYy8ojwfuWAJ4nQkxke
-    JyVHtdC6+TtXY67gF0l1hy9/Mz4nlqbOovzaev5wB6ex2YifCsAOme3xWNOccE/H
-    02ptLH4hLfIfHaC58Sf39QwQ5CZZPqnnXQxZ8/VSg9S49I8D62dXT36UosKzzKQk
-    w7x+BKJiYB5ccs8jU1VdUL2j3uAVcYcsTmwSAT63SeWZXD4jl745luMz+j35JDjm
-    GYrHBkq9chmz51Hs2sGCgx1cDDf6MEkP0USSOGuCyAECgYEA/USDDJDrVcbh/1a4
-    cpN5ocIIJoowCeaFILI8UBUpGtfTGcaxfIzIem0KCkb6DEScxQa7sdOe+eXVoWD6
-    TLRZDH/8zjlh2E9xCOWEs17Hmv/EVaXntkMREColQeXBYfN86E+oyVGvCPFz7MM8
-    D96O6yQzowhWRaS/H0m4yUFueyECgYEAzn67qeznX9q+3nJkg2xtFmPtj2j8V+TW
-    +tEZk+BJTs/JR/DAqj3IhzAoxFPFIEEHd3QY3dXaHT8J8lLdUXWtCHkGO8yonEgB
-    tpF12AHEXeJrVfaRhsIw6Pr50p9piJtAMFRpeFpuGro3bOAI1ohZAKFZO8dWNhok
-    wEqB2KE8+DUCgYBbPKgdCcPNdcUKT/pIRDpH/HclMxjVKDcDLVIu40CYi/FfUsWz
-    gZ/jAo7gXutLKhhzndZV3E9j5NkNtrrUkQ+XQjAXNnK6Evw8YTppx5YOj17yH78W
-    WJi4AwbC83qzx5xSsAe05nkwtpK1Uyu658kCilsTuzghBJVZNxybW7fqIQKBgCwr
-    2fLwdVIA1eF5sNyYHgGzIIcT2x7mGcKPZhxG1wef1RupeV0xWCrq911/2eQbZQB9
-    ejBB5aVp7bPDXApn1LrCQL4b+llr4cnu9bleL2Yx3+oEk36zHYlI3pXaedW5+BIe
-    jG0tUu4utVp51gomInvLB+6MpnluQDxN89amLwedAoGBAMlumsEqSsvuBDOKXOZQ
-    oTyTQQlYbuvkVDcpM9FcO94HOatuj5nLHRao6/fV0Wqk19nz30qqWz81LBcviS4L
-    apCCz453K0H2cdHLlLHuthT+IVau4bfPge4CKi6pIYgXOtEbOW1bcCe3dN2oML01
-    WPuSkxL/qDRmHVUIpsMtVlyZ
-    -----END PRIVATE KEY-----
+  nginx.conf: |-
+    user  nginx;
+    worker_processes  1;
+
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+
+
+    events {
+        worker_connections  1024;
+    }
+
+
+    http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        server { # simple reverse-proxy
+            listen      5001;
+            listen      [::]:5001;
+            server_name  localhost;
+            # serve dynamic requests
+            location / {
+                proxy_pass      http://localhost:5000;
+            }
+        }
+
+        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for"';
+
+        access_log  /var/log/nginx/access.log  main;
+
+        sendfile        on;
+        #tcp_nopush     on;
+
+        keepalive_timeout  65;
+
+        #gzip  on;
+
+        include /etc/nginx/conf.d/*.conf;
+    }
