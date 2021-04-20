@@ -1,4 +1,4 @@
-echo "apiVersion: configuration.konghq.com/v1beta1
+apiVersion: configuration.konghq.com/v1beta1
 kind: TCPIngress
 metadata:
   name: echo-plaintext
@@ -8,7 +8,5 @@ spec:
   rules:
   - port: 9000
     backend:
-      serviceName: registry
-      servicePort: 5000
-" | kubectl apply -f -
-tcpingress.configuration.konghq.com/echo-plaintext created
+      serviceName: policymanagementservice
+      servicePort: 8081
