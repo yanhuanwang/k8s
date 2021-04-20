@@ -1,0 +1,56 @@
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: registry
+  namespace: nonrtric
+  labels:
+    app: registry
+spec:
+  selector:
+    matchLabels:
+      app: registry
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: registry
+    spec:
+      containers:
+      - name: kubeproxy
+        image: mitmproxy/mitmproxy:6.0.2
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 8081
+          name: web
+          protocol: TCP
+        command: ["mitmweb"]
+        args: ["--web-host", "0.0.0.0", "--no-web-open-browser", "-p", "$KUBE_PROXY_INTERNAL_PORT", "--set", "ssl_insecure"]
+      - name: master
+        image: registry:2
+        ports:
+        - name: tcp
+          containerPort: 5000
+      volumes:
+      - name: config
+        configMap:
+          name: nginx.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry
+  namespace: nonrtric
+  labels:
+    app: registry
+spec:
+  type: LoadBalancer
+  ports:
+  - name: tcp
+    port: 5001
+    targetPort: 5001
+  selector:
+    app: registry
+
