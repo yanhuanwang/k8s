@@ -1,0 +1,103 @@
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: registry
+  namespace: nonrtric
+  labels:
+    app: registry
+spec:
+  selector:
+    matchLabels:
+      app: registry
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: registry
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19
+        ports:
+        - name: tcp
+          containerPort: 5001
+        volumeMounts:
+          - name: config
+            readOnly: true
+            mountPath: /etc/nginx/nginx.conf
+            subPath: nginx.conf
+      - name: master
+        image: registry:2
+        ports:
+        - name: tcp
+          containerPort: 5000
+      volumes:
+      - name: config
+        configMap:
+          name: nginx.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry
+  namespace: nonrtric
+  labels:
+    app: registry
+spec:
+  type: LoadBalancer
+  ports:
+  - name: tcp
+    port: 5001
+    targetPort: 5001
+  selector:
+    app: registry
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx.conf
+  namespace: nonrtric
+data:
+  # example of a complex property defined using --from-file
+  nginx.conf: |-
+    user  nginx;
+    worker_processes  1;
+
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+
+
+    events {
+        worker_connections  1024;
+    }
+
+
+    http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        server { # simple reverse-proxy
+            listen      5001;
+            listen      [::]:5001;
+            server_name  localhost;
+            # serve dynamic requests
+            location / {
+                proxy_pass      http://localhost:5000;
+            }
+        }
+
+        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for"';
+
+        access_log  /var/log/nginx/access.log  main;
+
+        sendfile        on;
+        #tcp_nopush     on;
+
+        keepalive_timeout  65;
+
+        #gzip  on;
+
+        include /etc/nginx/conf.d/*.conf;
+    }
