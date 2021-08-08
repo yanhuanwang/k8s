@@ -24,19 +24,19 @@
 # one policy in a1-sim-STD_0 (with no policy-type)
 # one policy-type and one policy in a1-sim-STD2_0
 
-policy_agent_host="policymanagementservice"
-policy_agent_port="9080"
-a1_sim_osc_0_host="a1-sim-osc-0.a1-sim"
+policy_agent_host="policy-agent-container"
+policy_agent_port="8081"
+a1_sim_osc_0_host="a1-interface-osc-0.a1-sim"
 a1_sim_osc_0_port="8085"
-a1_sim_osc_1_host="a1-sim-osc-1.a1-sim"
+a1_sim_osc_1_host="a1-interface-osc-1.a1-sim"
 a1_sim_osc_1_port="8085"
-a1_sim_std_0_host="a1-sim-std-0.a1-sim"
+a1_sim_std_0_host="a1-interface-std-0.a1-sim"
 a1_sim_std_0_port="8085"
-a1_sim_std_1_host="a1-sim-std-1.a1-sim"
+a1_sim_std_1_host="a1-interface-std-1.a1-sim"
 a1_sim_std_1_port="8085"
-a1_sim_std2_0_host="a1-sim-std2-0.a1-sim"
+a1_sim_std2_0_host="a1-interface-std-v2-0.a1-sim"
 a1_sim_std2_0_port="8085"
-a1_sim_std2_1_host="a1-sim-std2-1.a1-sim"
+a1_sim_std2_1_host="a1-interface-std-v2-1.a1-sim"
 a1_sim_std2_1_port="8085"
 httpx=http
 
