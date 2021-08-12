@@ -1,0 +1,6 @@
+dependencies:
+- name: nonrtric-common
+  repository: http://127.0.0.1:8879/charts
+  version: 2.0.0
+digest: sha256:d474d020a95b89288eb7b2523bb30859d00b66b3258f50068d71613692112b0f
+generated: "2021-06-06T08:45:54.977971+08:00"
