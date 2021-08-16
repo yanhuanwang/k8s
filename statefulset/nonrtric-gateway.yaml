@@ -29,9 +29,7 @@ spec:
     - uri:
         prefix: /
     - uri:
-        prefix: /static
-    - uri:
-        exact: /login
+        exact: /swagger-ui.html
     - uri:
         exact: /logout
     - uri:
@@ -42,6 +40,6 @@ spec:
         prefix: /swagger-ui
     route:
     - destination:
-        host: policy-agent-container
+        host: controlpanel
         port:
-          number: 8081
+          number: 8080
