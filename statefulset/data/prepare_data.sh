@@ -31,4 +31,4 @@
 # hence the commands for populating enrichment data need to be run from within the cluster.
 
 kubectl -n nonrtric cp run_in_k8s a1-interface-osc-0:/usr/src/app/
-kubectl -n nonrtric exec -it a1-interface-osc-0 -- bash -c 'cd run_in_k8s/ && ./populate_policy_data.sh'
+kubectl -n nonrtric exec -it a1-interface-osc-0 -- bash -c 'cd run_in_k8s/ && ./populate_policy_data.sh && ./populate_enrichment_data.sh'

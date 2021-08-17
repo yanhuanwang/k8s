@@ -24,7 +24,7 @@
 # one EiJob in ECS
 
 ecs_host="enrichmentservice"
-ecs_port="9082"
+ecs_port="8083"
 httpx=http
 
 echo "ECS status:"

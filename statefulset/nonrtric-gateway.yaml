@@ -27,6 +27,24 @@ spec:
   http:
   - match:
     - uri:
+        prefix: /data-producer
+    - uri:
+        prefix: /data-consumer
+    route:
+    - destination:
+        host: enrichmentservice
+        port:
+          number: 8083
+  - match:
+    - uri:
+        prefix: /a1-policy
+    route:
+    - destination:
+        host: policy-agent-container
+        port:
+          number: 8081
+  - match:
+    - uri:
         prefix: /
     - uri:
         exact: /swagger-ui.html
