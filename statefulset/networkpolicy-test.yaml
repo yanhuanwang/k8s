@@ -14,3 +14,7 @@ spec:
     - podSelector:
         matchLabels:
           app: policy-agent-container
+  - from:
+    - podSelector:
+        matchLabels:
+          app: a1-sim
